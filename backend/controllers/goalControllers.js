@@ -1,13 +1,14 @@
 const asyncHandler = require('express-async-handler')
 
 const Goal = require("../models/goalModel")
+const User = require("../models/userModel")
 // @desc get Goals
 // @route GET /api/goals
 // @access Private
 const getGoals = asyncHandler (async (req,res) =>
 {
 
-    const goals= await Goal.find()
+    const goals= await Goal.find({user: req.user.id})
     res.status(200).json({message: goals})
 })
 
@@ -24,6 +25,7 @@ const setGoals =asyncHandler (async (req,res)=>
         throw new Error('text files missing')
     }
     const goal= await Goal.create({
+        user: req.user.id,
         text: req.body.text
     })
     res.status(200).json(goal)
@@ -36,15 +38,26 @@ const setGoals =asyncHandler (async (req,res)=>
 const updateGoals = asyncHandler (async (req,res)=>
 {
     const goal= await Goal.findById(req.params.id)
-    if(!goal)
+    const user = await User.findById(req.user.id)
+    if(!goal || !user)
+    {
+        res.status(400);
+        throw new Error('Invalid ID')
+    }
+    
+   //Logged in User Matches the Goal User
+    if(user.id === goal.user.toString())
+    {
+        const updatedGoal = await Goal.findByIdAndUpdate(req.params.id,req.body,{new:true})
+
+        res.status(200).json(updatedGoal )
+    }
+    else
     {
         res.status(400);
         throw new Error('Invalid ID')
     }
 
-    const updatedGoal = await Goal.findByIdAndUpdate(req.params.id,req.body,{new:true})
-
-    res.status(200).json(updatedGoal )
 })
 
 
@@ -53,14 +66,27 @@ const updateGoals = asyncHandler (async (req,res)=>
 // @access Private
 const deleteGoals = asyncHandler (async (req,res)=>
 {
-    const goal = await Goal.findById(req.params.id)
-    if(!goal)
+    const goal= await Goal.findById(req.params.id)
+    const user = await User.findById(req.user.id)
+    if(!goal || !user)
     {
         res.status(400);
         throw new Error('Invalid ID')
     }
-    await Goal.findByIdAndDelete(req.params.id)
-    res.status(200).json(req.params.id)
+    
+    if(user.id === goal.user.toString())
+    {
+        await Goal.findByIdAndDelete(req.params.id)
+        res.status(200).json(req.params.id)
+    }
+    else
+    {
+        res.status(400);
+        throw new Error('Invalid ID')
+    }
+
+
+   
 })
 
 
