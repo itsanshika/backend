@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react"
+import { useSelector, useDispatch } from 'react-redux'
+import { useNavigate } from "react-router-dom"
+import { toast } from 'react-toastify'
 import { FaUser } from 'react-icons/fa'
+import { register, reset } from '../features/auth/authSlice'
+import { spinner } from '../components/spinner'
+
+
 
 function Register() {
 
@@ -10,21 +17,50 @@ function Register() {
         password2: ''
     })
     const { name, email, password, password2 } = formData
+
+    const navigate = useNavigate()
+    const dispatch = useDispatch()
+    const { user, isError, isSuccess, isloading, message } = useSelector((state) => state.auth)
+
+
+    useEffect(() => {
+        if (isError) {
+            toast.error(message)
+        }
+        if (isSuccess || user) {
+            navigate('/')
+        }
+        dispatch(reset())
+    }, [user, isError, isSuccess, isloading, message, navigate, dispatch])
+
     const onChange = (e) => {
-       
-        setFormData((prevState)=>({
+
+        setFormData((prevState) => ({
             ...prevState,
-            [e.target.name]:e.target.value
+            [e.target.name]: e.target.value
         }))
     }
 
-    const onSubmit = (e) =>
-    {
-        
+    const onSubmit = (e) => {
+
         e.preventDefault()
+        if (password != password2) {
+            toast.error('Passwords do not match')
+        }
+        else {
+            const userData = {
+                name, email, password
+
+            }
+         
+            dispatch(register(userData))
+        }
 
     }
-
+    
+    if (isloading) {
+        return <spinner />
+    }
 
     return (
         <>
@@ -41,8 +77,8 @@ function Register() {
                             name='name'
                             value={name}
                             placeholder="Enter your name"
-                            onChange={onChange} 
-                            />
+                            onChange={onChange}
+                        />
                     </div>
 
                     <div className="form-group">
@@ -51,8 +87,8 @@ function Register() {
                             name='email'
                             value={email}
                             placeholder="Enter your Email"
-                            onChange={onChange} 
-                            />
+                            onChange={onChange}
+                        />
                     </div>
 
                     <div className="form-group">
@@ -61,8 +97,8 @@ function Register() {
                             name='password'
                             value={password}
                             placeholder="Enter password"
-                            onChange={onChange} 
-                            />
+                            onChange={onChange}
+                        />
                     </div>
                     <div className="form-group">
                         <input type="password" className="form-control"
@@ -70,11 +106,11 @@ function Register() {
                             name='password2'
                             value={password2}
                             placeholder="Re-enter password"
-                            onChange={onChange} 
-                            />
+                            onChange={onChange}
+                        />
                     </div>
                     <div className="form-group">
-                       <button type="submit" className="btn btn-block">Submit</button>
+                        <button type="submit" className="btn btn-block">Submit</button>
                     </div>
 
                 </form>
