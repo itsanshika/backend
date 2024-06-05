@@ -13,8 +13,7 @@ function Header() {
     {
         dispatch(logout())
         dispatch(reset())
-        // console.log(user)
-        navigate('/')
+        navigate('/login')
 
     }
 

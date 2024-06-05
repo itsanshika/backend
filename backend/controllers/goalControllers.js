@@ -38,15 +38,15 @@ const setGoals =asyncHandler (async (req,res)=>
 const updateGoals = asyncHandler (async (req,res)=>
 {
     const goal= await Goal.findById(req.params.id)
-    const user = await User.findById(req.user.id)
-    if(!goal || !user)
+
+    if(!goal || !req.user)
     {
         res.status(400);
         throw new Error('Invalid ID')
     }
     
    //Logged in User Matches the Goal User
-    if(user.id === goal.user.toString())
+    if(req.user.id === goal.user.toString())
     {
         const updatedGoal = await Goal.findByIdAndUpdate(req.params.id,req.body,{new:true})
 
@@ -67,14 +67,14 @@ const updateGoals = asyncHandler (async (req,res)=>
 const deleteGoals = asyncHandler (async (req,res)=>
 {
     const goal= await Goal.findById(req.params.id)
-    const user = await User.findById(req.user.id)
-    if(!goal || !user)
+   
+    if(!goal || !req.user)
     {
         res.status(400);
         throw new Error('Invalid ID')
     }
     
-    if(user.id === goal.user.toString())
+    if(req.user.id === goal.user.toString())
     {
         await Goal.findByIdAndDelete(req.params.id)
         res.status(200).json(req.params.id)

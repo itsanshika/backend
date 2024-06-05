@@ -29,7 +29,6 @@ return response.data
 const logout = async() =>
 {
     localStorage.removeItem('user')
-
 }
 
 
